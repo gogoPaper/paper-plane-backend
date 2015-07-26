@@ -11,4 +11,4 @@ def index():
 @user_api.route('/testdb')
 def testdb():
     para = paragraph()
-    return para.test()
+    return str(para.test())
