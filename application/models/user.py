@@ -1,4 +1,4 @@
-
+from ..utils.db import collection
 
 class User:
     # {
