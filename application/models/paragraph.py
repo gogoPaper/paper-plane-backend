@@ -1,4 +1,9 @@
-from ..utils.db import collection
+from bson.objectid import ObjectId
+from bson.json_util import dumps
+from datetime import datetime
+from pymongo.errors import *
+
+from ..utils.db import db
 
 class Paragraph:
     # {
@@ -11,13 +16,85 @@ class Paragraph:
     #     pictures: ['urlxxx', ...]
     # }
 
-    def __init__(self, arg):
-        self.arg = arg
-
+    def __init__(self, author_id, story_id):
+        self._id = ObjectId()
+        self.author_id = author_id
+        self.story_id = story_id
+        self.create_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        self.favours = 0
+        self.content = ""
+        self.pictures = []
     
+    #return the class as json
+    def get_as_json(self):
+        return self.__dict__
 
-    # def __init__(self):
-    #     pass
+    #insert paragraph
+    @staticmethod
+    def insert_paragraph(i_paragraph):
+        collection =  db['paragraph']
+        if i_paragraph is not None:
+            try:
+                collection.insert_one(i_paragraph.get_as_json())
+                return ""
+            except DuplicateKeyError as e:
+                return "Insert fail due to duplicate key."
+            except PyMongoError as e:
+                return "Insert fail due to unkown reason."
+        else:
+            return "Insert fail due to unvalid parameter." 
 
-    # def test(self):
-    #     return collection.find_one()
+    #get paragraphs by id or get all paragraphs 
+    #json type: list or dict
+    @staticmethod
+    def get_paragraph(id = None):
+        collection =  db['paragraph']
+        if id is None:
+            return dumps(collection.find({}))
+        else:
+            return dumps(collection.find_one({"_id":id}))
+
+    #get a lists of paragraph by story_id
+    #json type: list 
+    @staticmethod
+    def get_paragraph_by_story_id(story_id):
+        collection =  db['paragraph']
+        return dumps(collection.find({"story_id":story_id}))
+
+    #get paragraphs by given params
+    @staticmethod
+    def get_paragraph_by_fields(sort_field,offset, limit):
+        collection =  db['paragraph']
+        #desc order by sort_field
+        return dumps(collection.find().sort(sort_field, -1).skip(offset).limit(limit))
+
+    #params can be json or dict
+    #update paragraph
+    @staticmethod
+    def update_paragraph(u_paragraph):
+        collection =  db['paragraph']
+        if u_paragraph is not None:
+            try:
+                # m_json = u_paragraph.get_as_json()
+                result = collection.replace_one({'_id':u_paragraph['_id']}, u_paragraph)
+                if result.modified_count == 0:
+                    return "Update fail due to not existing id."
+                else:
+                    return ""
+            except PyMongoError as e:
+                return "Update fail due to unkown reason."
+        else:
+            return "Update fail due to unvalid parameter."
+
+    #incr favours
+    @staticmethod
+    def incre_favours(id):
+        collection =  db['paragraph']
+        try:
+            result = collection.update_one({'_id': id}, {'$inc': {'favours': 1}})
+            if result.modified_count == 0:
+                return "Update fail due to not existing id."
+            else:
+                return ""
+        except PyMongoError as e:
+                return "Update fail due to unkown reason."
