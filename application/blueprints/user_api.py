@@ -8,8 +8,6 @@ user_api = Blueprint('user_api', __name__)
 def index():
     return 'Hello World!'
 
-# @user_api.route('/testdb')
-# def testdb():
-#     # uMessage = Message('ddd', 'update_dddd')
-#     return Message.read_by_sender('carloswei')
-
+@user_api.route('/testdb')
+def testdb():
+    return ""

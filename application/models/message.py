@@ -1,6 +1,7 @@
 from bson.objectid import ObjectId
 from bson.json_util import dumps
 from datetime import datetime
+from pymongo.errors import *
 
 from ..utils.db import db
 
@@ -16,11 +17,10 @@ class Message:
             self._id = ObjectId()
         else:
             self._id = ObjectId(id)
-        if create_time is None:
-            self.create_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        else:
-            self.create_time = create_time
-
+        # if create_time is None:
+        self.create_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        # else:
+        #     self.create_time = create_time
         self.sender = sender
         self.content = content
 
@@ -44,47 +44,64 @@ class Message:
         else:
             raise Exception("No data to create message from!")
 
-    #return _id(string)
+    #insert message
     @staticmethod
-    def add_message(c_message):
+    def insert_message(c_message):
         collection =  db['message']
         if c_message is not None:
-            create_id = collection.insert(c_message.get_as_json())
-            return str(create_id)
+            try:
+                collection.insert_one(c_message.get_as_json())
+                return ""
+            except DuplicateKeyError as e:
+                return "Insert fail due to duplicate key."
+            except PyMongoError as e:
+                return "Insert fail due to unkown reason."
         else:
-            raise Exception("Nothing to save, because parameter is None")
+            return "Insert fail due to unvalid parameter."
 
-    #return json
+    #get messages by id or get all messages 
+    #return type: json
     @staticmethod
-    def read_message(id = None):
+    def get_message(id = None):
         collection =  db['message']
         if id is None:
             return dumps(collection.find({}))
         else:
             return dumps(collection.find({"_id":ObjectId(id)}))
 
-    #return json
+    #get a lists of message by sender
+    #return type: json
     @staticmethod
-    def read_by_sender(sender):
+    def get_message_by_sender(sender):
         collection =  db['message']
         return dumps(collection.find({"sender":sender}))
 
-    #return _id(string)
+    #update message
     @staticmethod
     def update_message(u_message):
         collection =  db['message']
         if u_message is not None:
-            update_id = collection.save(u_message.get_as_json())
-            return str(update_id)
+            try:
+                m_json = u_message.get_as_json()
+                result = collection.replace_one({'_id':m_json['_id']}, m_json)
+                if result.modified_count == 0:
+                    return "Update fail due to not existing id."
+                else:
+                    return ""
+            except PyMongoError as e:
+                return "Update fail due to unkown reason."
         else:
-            raise Exception("Nothing to update, because parameter is None")
+            return "Update fail due to unvalid parameter."
 
-    #return _id(string)
+    #delete message
     @staticmethod
-    def delete_message(r_message):
+    def delete_message(id):
         collection = db['message']
-        if r_message is not None:
-            remove_id = collection.remove(r_message.get_as_json())
-            return str(remove_id)
-        else:
-            raise Exception("Nothing to delete, because parameter is None")
+        try:
+            result = collection.delete_one({'_id':ObjectId(id)})
+            if result.deleted_count == 0:
+                return "Delete fail due to not existing id."
+            else:
+                return ""
+        except PyMongoError as e:
+            return "Update fail due to unkown reason."
