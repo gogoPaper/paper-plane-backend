@@ -1,4 +1,9 @@
-from ..utils.db import collection
+from bson.objectid import ObjectId
+from bson.json_util import dumps
+from datetime import datetime
+from pymongo.errors import *
+
+from ..utils.db import db
 
 class User:
     # {
@@ -7,11 +12,73 @@ class User:
     #     phone: 'xxx',
     #     password: 'xxx',
     #     nickname: 'xxx',
-    #     avatar: 'url',
-    #     focus_storis: [story_ids],
-    #     focus_users?: [user_ids],
-    #     degree: <number>,
-    #     experience_value: <number>
+    #     avatar: 'urlxxx',
+    #     degree: Number,
+    #     experience_value: Number,
+    #     focus_stories: [story_ids],
+    #     focus_users: [user_ids]
     # }
-    def __init__(self, arg):
-        self.arg = arg
+    def __init__(self, phone,password,nickname,avatar):
+        self._id = ObjectId()
+        #self.token=""
+        self.phone = phone
+        self.password = password
+        self.nickname = nickname
+        self.avatar =avatar
+        self.degree = 0
+        self.experience_value = 0
+        self.focus_stories = []
+        self.focus_users = []
+
+    #return the class as json
+    def get_as_json(self):
+        return self.__dict__
+
+    #insert user
+    @staticmethod
+    def insert_user(i_user):
+        collection =  db['user']
+        if i_user is not None:
+            try:
+                collection.insert_one(i_user.get_as_json())
+                return ""
+            except DuplicateKeyError as e:
+                return "Insert fail due to duplicate key."
+            except PyMongoError as e:
+                return "Insert fail due to unkown reason."
+        else:
+            return "Insert fail due to unvalid parameter."   
+
+    #get user by id or get all users 
+    #return type: json
+    @staticmethod
+    def get_user(id = None):
+        collection =  db['user']
+        if id is None:
+            return dumps(collection.find({}))
+        else:
+            return dumps(collection.find_one({"_id":id}))
+
+    #get the user by phone
+    #json type: list
+    @staticmethod
+    def get_user_by_phone(phone):
+        collection =  db['user']
+        return dumps(collection.find({"phone":phone}))
+
+    #update user
+    @staticmethod
+    def update_user(u_user):
+        collection =  db['user']
+        if u_user is not None:
+            try:
+                # m_json = u_user.get_as_json()
+                result = collection.replace_one({'_id':u_user['_id']}, u_user)
+                if result.modified_count == 0:
+                    return "Update fail due to not existing id."
+                else:
+                    return ""
+            except PyMongoError as e:
+                return "Update fail due to unkown reason."
+        else:
+            return "Update fail due to unvalid parameter."
