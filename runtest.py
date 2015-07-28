@@ -180,10 +180,33 @@ class UserTestCase(unittest.TestCase):
         self.assertEquals(u_phone, user_dict['phone'])
 
     def test_add_focus_story(self):
-        pass
+        # create user
+        phone = "123456"
+        password = "123456"
+        nickname = "nick"
+        avatar = "avatar"
+        user = User(phone, password, nickname, avatar)
+        User.insert_user(user)
+        # create story
+        title = "test title"
+        story = Story(title)
+        Story.insert_story(story)
+        self.assertEquals("", User.add_focus_story(user._id, story._id))
+        user.focus_stories.append(story._id)
+        self.assertEquals(user.__dict__, loads(User.get_user(user._id)))
 
     def test_add_focus_user(self):
-        pass
+        phone = "123456"
+        password = "123456"
+        nickname = "nick"
+        avatar = "avatar"
+        user = User(phone, password, nickname, avatar)
+        focused_user = User(phone, password, nickname, avatar)
+        User.insert_user(user)
+        User.insert_user(focused_user)
+        User.add_focus_user(user._id, focused_user._id)
+        user.focus_users.append(focused_user._id)
+        self.assertEquals(user.__dict__, loads(User.get_user(user._id)))
 
 class StoryTestCase(unittest.TestCase):
 
@@ -301,7 +324,25 @@ class ParagraphTestCase(unittest.TestCase):
         self.assertEquals(u_content, para_dict['content'])
 
     def test_toggle_user_favours(self):
-        pass
+        # create paragraph
+        author_id = 1
+        story_id = 1
+        paragraph = Paragraph(author_id, story_id)
+        Paragraph.insert_paragraph(paragraph)
+        # create user
+        phone = "123456"
+        password = "123456"
+        nickname = "nick"
+        avatar = "avatar"
+        user = User(phone, password, nickname, avatar)
+        User.insert_user(user)
+        # favour
+        Paragraph.toggle_user_favours(paragraph._id, user._id)
+        paragraph.favour_users.append(user._id)
+        self.assertEquals(paragraph.__dict__, loads(Paragraph.get_paragraph(paragraph._id)))
+        Paragraph.toggle_user_favours(paragraph._id, user._id)
+        paragraph.favour_users.remove(user._id)
+        self.assertEquals(paragraph.__dict__, loads(Paragraph.get_paragraph(paragraph._id)))
 
 if __name__ == '__main__':
     unittest.main()
