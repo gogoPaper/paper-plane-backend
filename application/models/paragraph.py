@@ -1,5 +1,5 @@
 from bson.objectid import ObjectId
-from bson.json_util import dumps
+from bson.json_util import dumps, loads
 from datetime import datetime
 from pymongo.errors import *
 
@@ -11,17 +11,18 @@ class Paragraph:
     #     author_id: 'xx',
     #     story_id: 'xx'
     #     create_time: 'xxx',
-    #     favours: Number,
+    #     favour_users: ['xxxuid', ...],
     #     content: 'xxx',
     #     pictures: ['urlxxx', ...]
     # }
+
 
     def __init__(self, author_id, story_id):
         self._id = ObjectId()
         self.author_id = author_id
         self.story_id = story_id
         self.create_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        self.favours = 0
+        self.favour_users = []
         self.content = ""
         self.pictures = []
     
@@ -63,7 +64,7 @@ class Paragraph:
 
     #get paragraphs by given params
     @staticmethod
-    def get_paragraph_by_fields(sort_field,offset, limit):
+    def get_paragraph_by_fields(offset, limit, sort_field='_id'):
         collection =  db['paragraph']
         #desc order by sort_field
         return dumps(collection.find().sort(sort_field, -1).skip(offset).limit(limit))
@@ -86,15 +87,16 @@ class Paragraph:
         else:
             return "Update fail due to unvalid parameter."
 
-    #incr favours
+    #toggle user favours
     @staticmethod
-    def incre_favours(id):
+    def toggle_user_favours(paragraph_id, user_id):
         collection =  db['paragraph']
         try:
-            result = collection.update_one({'_id': id}, {'$inc': {'favours': 1}})
-            if result.modified_count == 0:
-                return "Update fail due to not existing id."
+            target_paragraph = loads(Paragraph.get_paragraph(paragraph_id))
+            if user_id in target_paragraph['favour_users']:
+                target_paragraph['favour_users'].remove(user_id)
             else:
-                return ""
+                target_paragraph['favour_users'].append(user_id)
+            return Paragraph.update_paragraph(target_paragraph)
         except PyMongoError as e:
                 return "Update fail due to unkown reason."

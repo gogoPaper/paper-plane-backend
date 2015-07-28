@@ -12,7 +12,7 @@ class Message:
     #     create_time: 'xxx',
     #     content: 'xxx'
     # }
-    def __init__(self, sender, content, id=None, create_time = None):
+    def __init__(self, sender, content):
         # if id is None:
         self._id = ObjectId()
         # else:

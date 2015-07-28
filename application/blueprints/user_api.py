@@ -32,4 +32,5 @@ def testdb():
     # u_user = loads(User.get_user(ObjectId("55b6f05cf5888d30bcf88de8")))
     # u_user['nickname'] = "carlosweiV2"
     # return User.update_user(u_user)
+    # return Paragraph.toggle_user_favours(ObjectId("55b72f6bf5888d36f0634bb6"), "testid")
     return "test"

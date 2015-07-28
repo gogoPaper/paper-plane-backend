@@ -64,7 +64,7 @@ class User:
     @staticmethod
     def get_user_by_phone(phone):
         collection =  db['user']
-        return dumps(collection.find({"phone":phone}))
+        return dumps(collection.find_one({"phone":phone}))
 
     #update user
     @staticmethod
@@ -82,3 +82,37 @@ class User:
                 return "Update fail due to unkown reason."
         else:
             return "Update fail due to unvalid parameter."
+
+    #focus story
+    @staticmethod
+    def add_focus_story(user_id, story_id):
+        collection = db['user']
+        try:
+            result = collection.update_one({'_id':user_id}, {
+                '$push': {
+                    'focus_stories':story_id
+                } 
+                })
+            if result.modified_count == 0:
+                return "add focus to story fail due to not existing user id."
+            else:
+                return ""
+        except PyMongoError as e:
+            return "add focus to story fail due to unkown reason."
+
+    #focus story
+    @staticmethod
+    def add_focus_user(user_id, focus_user_id):
+        collection = db['user']
+        try:
+            result = collection.update_one({'_id':user_id}, {
+                '$push': {
+                    'focus_users':focus_user_id
+                } 
+                })
+            if result.modified_count == 0:
+                return "add focus to story fail due to not existing user id."
+            else:
+                return ""
+        except PyMongoError as e:
+            return "add focus to story fail due to unkown reason."
