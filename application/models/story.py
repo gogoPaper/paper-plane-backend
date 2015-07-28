@@ -18,17 +18,17 @@ class Story:
     #     lock_time: 'xxx',
     #     current_owner: 'xxxuid'
     # }
-    def __init__(self, title, current_paragraph_id, current_owner):
+    def __init__(self, title):
         self._id = ObjectId()
         self.title = title
         self.create_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         self.total_favours = 0
         self.total_collections = 0
-        self.paragraph_ids = [current_paragraph_id]
+        self.paragraph_ids = []
         #is occupied but no new content
-        self.state = 1
+        self.state = 0
         self.lock_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        self.current_owner = current_owner
+        self.current_owner =""
 
     #return the class as json
     def get_as_json(self):
@@ -66,7 +66,7 @@ class Story:
     #get stories by given params
     #json type: list
     @staticmethod
-    def get_story_by_fields(sort_field,offset, limit):
+    def get_story_by_fields(offset, limit, sort_field='total_favours'):
         collection =  db['story']
         #desc order by sort_field
         return dumps(collection.find().sort(sort_field, -1).skip(offset).limit(limit))
