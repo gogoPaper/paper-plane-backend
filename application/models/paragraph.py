@@ -30,7 +30,8 @@ class Paragraph:
     def get_as_json(self):
         return self.__dict__
 
-    #insert paragraph
+    #@params Paragraph class
+    #@return success return "", else return reasons
     @staticmethod
     def insert_paragraph(i_paragraph):
         collection =  db['paragraph']
@@ -45,7 +46,7 @@ class Paragraph:
         else:
             return "Insert fail due to unvalid parameter." 
 
-    #get paragraphs by id or get all paragraphs 
+    #@params Paragraph id
     #json type: list or dict
     @staticmethod
     def get_paragraph(id = None):
@@ -55,22 +56,23 @@ class Paragraph:
         else:
             return dumps(collection.find_one({"_id":id}))
 
-    #get a lists of paragraph by story_id
+    #@params story_id
     #json type: list 
     @staticmethod
     def get_paragraph_by_story_id(story_id):
         collection =  db['paragraph']
         return dumps(collection.find({"story_id":story_id}))
 
-    #get paragraphs by given params
+    #@params offset limit sort_field
+    #json type: list
     @staticmethod
     def get_paragraph_by_fields(offset, limit, sort_field='_id'):
         collection =  db['paragraph']
         #desc order by sort_field
         return dumps(collection.find().sort(sort_field, -1).skip(offset).limit(limit))
 
-    #params can be json or dict
-    #update paragraph
+    #@params u_paragraph
+    #@return success return "", else return reasons
     @staticmethod
     def update_paragraph(u_paragraph):
         collection =  db['paragraph']
@@ -87,7 +89,6 @@ class Paragraph:
         else:
             return "Update fail due to unvalid parameter."
 
-    #toggle user favours
     @staticmethod
     def toggle_user_favours(paragraph_id, user_id):
         collection =  db['paragraph']
