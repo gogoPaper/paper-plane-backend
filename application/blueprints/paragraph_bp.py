@@ -1,3 +1,5 @@
+#-*- coding: UTF-8 -*- 
+
 from flask import Blueprint, session, request, jsonify,render_template
 from bson.objectid import ObjectId
 from bson.json_util import loads, dumps
@@ -16,6 +18,7 @@ paragraph_bp= Blueprint('paragraph_bp', __name__)
 def toggletest():
     return render_template('toggletest.html')
 
+#点赞(已点赞则为取消点赞)
 @paragraph_bp.route('/toggle', methods=['POST'])
 def toggle():
     if not is_login():
@@ -24,24 +27,29 @@ def toggle():
                 'data':'user not log in'
             })
     # paragraph_id = request.form['paragraph_id']
+
     paragraph_id = json.loads(request.data)['paragraph_id']
     user_phone =  session['phone']
     user_id = loads(User.get_user_by_phone(user_phone))['_id']
-
+    #获得目标段落对象
     target_paragraph = Paragraph.get_paragraph(ObjectId(paragraph_id))
     if target_paragraph != 'null':
         target_paragraph = loads(target_paragraph)
+        #获得段落所属故事对象
         target_story = loads(Story.get_story_by_id(target_paragraph['story_id']))
+        #如果用户点赞过则取消点赞
         if user_id in target_paragraph['favour_users']:
             target_paragraph['favour_users'].remove(user_id)
             target_story['total_favours'] -= 1
             return_data = 'disfavour'
+        #如果用户没点赞过则点赞
         else:
             target_paragraph['favour_users'].append(user_id)
             target_story['total_favours'] += 1
             return_data = 'favour'
         update_paragraph_result = Paragraph.update_paragraph(target_paragraph) 
         update_story_result = Story.update_story(target_story)
+        #更新成功,返回200,失败返回403
         if update_paragraph_result == "" and update_story_result == "":
             return jsonify({
                     'status':200,
@@ -77,7 +85,8 @@ def story_paragraphs():
         story = loads(story)
         paragraphs = story['paragraph_ids']
         p_length = len(paragraphs)
-        start = int(offset)
+        offset = (int(offset)-1)*int(amount)
+        start = offset
         if  p_length - start <= 0:
             return jsonify({
                     'status':200,

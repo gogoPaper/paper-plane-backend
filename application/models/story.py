@@ -1,3 +1,5 @@
+#-*- coding: UTF-8 -*- 
+
 from bson.objectid import ObjectId
 from bson.json_util import dumps
 from datetime import datetime
@@ -11,7 +13,7 @@ class Story:
     #     id: 'xxx',
     #     title: 'xxx',
     #     create_time: 'xxx',
-    #     total_favours:, Number,
+    #     total_favours: Number,
     #     total_collections: Number,
     #     paragraph_ids: ['xx', ...],
     #     state: Number,

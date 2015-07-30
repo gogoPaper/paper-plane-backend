@@ -1,3 +1,5 @@
+#-*- coding: UTF-8 -*- 
+
 from bson.objectid import ObjectId
 from bson.json_util import dumps, loads
 from datetime import datetime

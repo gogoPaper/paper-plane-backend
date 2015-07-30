@@ -362,14 +362,25 @@ class UserBpTestCase(unittest.TestCase):
         for name in ["message", "user", "story", "paragraph"]:
             db.drop_collection(name)
 
-    def login(self, phone, password):
-        data = dict(phone=phone, password=password)
-        return self.app.post("/user/login")
+    def login(self, phone=None, password=None):
+        headers = [("Content-Type", "application/json")]
+        data = dict()
+        if phone != None:
+            data["phone"] = phone
+        if password != None:
+            data["password"] = password
+        json_data = dumps(data)
+        json_data_length = len(json_data)
+        headers.append(("Content-Length", json_data_length))
+        return self.app.post("/user/login", headers=headers, data=json_data)
 
     def test_login(self):
         rv = self.login("123456", "123456")
-        print rv
+        self.assertEquals(200, loads(rv.data)["status"])
 
+    def test_login_empty_phone(self):
+        rv = self.login()
+        print rv
 
 if __name__ == '__main__':
     unittest.main()
