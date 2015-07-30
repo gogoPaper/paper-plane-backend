@@ -25,7 +25,6 @@ class Story:
         self.total_favours = 0
         self.total_collections = 0
         self.paragraph_ids = []
-        #is occupied but no new content
         self.state = 0
         self.lock_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         self.current_owner =""
@@ -34,13 +33,14 @@ class Story:
     def get_as_json(self):
         return self.__dict__
 
-    #insert story
+    #@params Paragraph class
+    #@return success return "", else return reasons
     @staticmethod
     def insert_story(i_story):
         collection =  db['story']
         if i_story is not None:
             try:
-                collection.insert_one(i_story.get_as_json())
+                collection.insert_one(i_story)
                 return ""
             except DuplicateKeyError as e:
                 return "Insert fail due to duplicate key."
@@ -49,21 +49,21 @@ class Story:
         else:
             return "Insert fail due to unvalid parameter." 
 
-    #get the story by id
+    #@params story id
     #json type: dict
     @staticmethod
     def get_story_by_id(id):
         collection =  db['story']
         return dumps(collection.find_one({"_id":id})) 
 
-    #get the story by current_owner
+    #@params current_owner
     #json type: list
     @staticmethod
     def get_story_by_current_owner(current_owner):
         collection =  db['story']
         return dumps(collection.find({"current_owner":current_owner})) 
 
-    #get stories by given params
+    #@params offset limit sort_field
     #json type: list
     @staticmethod
     def get_story_by_fields(offset, limit, sort_field='total_favours'):
@@ -71,7 +71,8 @@ class Story:
         #desc order by sort_field
         return dumps(collection.find().sort(sort_field, -1).skip(offset).limit(limit))
 
-    #update story
+    #@params u_story
+    #@return success return "", else return reasons
     @staticmethod
     def update_story(u_story):
         collection =  db['story']

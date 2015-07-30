@@ -13,14 +13,8 @@ class Message:
     #     content: 'xxx'
     # }
     def __init__(self, sender, content):
-        # if id is None:
         self._id = ObjectId()
-        # else:
-        #     self._id = ObjectId(id)
-        # if create_time is None:
         self.create_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        # else:
-        #     self.create_time = create_time
         self.sender = sender
         self.content = content
 
@@ -44,7 +38,8 @@ class Message:
     #     else:
     #         raise Exception("No data to create message from!")
 
-    #insert message
+    #@params Message class
+    #@return success return "", else return reasons
     @staticmethod
     def insert_message(i_message):
         collection =  db['message']
@@ -59,7 +54,7 @@ class Message:
         else:
             return "Insert fail due to unvalid parameter."
 
-    #get messages by id or get all messages 
+    #@params message id
     #json type: list or dict
     @staticmethod
     def get_message(id = None):
@@ -69,15 +64,15 @@ class Message:
         else:
             return dumps(collection.find_one({"_id":id}))
 
-    #get a lists of message by sender
+    #@params sender
     #json type: list
     @staticmethod
     def get_message_by_sender(sender):
         collection =  db['message']
         return dumps(collection.find({"sender":sender}))
 
-    #params can be json or dict
-    #update message
+    #@params u_message
+    #@return success return "", else return reasons
     @staticmethod
     def update_message(u_message):
         collection =  db['message']
@@ -94,7 +89,8 @@ class Message:
         else:
             return "Update fail due to unvalid parameter."
 
-    #delete message
+    #@params id
+    #@return success return "", else return reasons
     @staticmethod
     def delete_message(id):
         collection = db['message']

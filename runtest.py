@@ -10,7 +10,9 @@ from application.models.user import User
 from application.models.story import Story
 from application.models.paragraph import Paragraph
 from application.utils.db import db
+import application
 
+"""
 class MessageTestCase(unittest.TestCase):
 
     def setUp(self):
@@ -343,6 +345,31 @@ class ParagraphTestCase(unittest.TestCase):
         Paragraph.toggle_user_favours(paragraph._id, user._id)
         paragraph.favour_users.remove(user._id)
         self.assertEquals(paragraph.__dict__, loads(Paragraph.get_paragraph(paragraph._id)))
+"""
+
+class UserBpTestCase(unittest.TestCase):
+
+    def setUp(self):
+        self.app = application.app.test_client()
+        # insert user
+        phone = "123456"
+        password = "123456"
+        avatar = "avatar"
+        user = User(phone, password, avatar)
+        User.insert_user(user)
+
+    def tearDown(self):
+        for name in ["message", "user", "story", "paragraph"]:
+            db.drop_collection(name)
+
+    def login(self, phone, password):
+        data = dict(phone=phone, password=password)
+        return self.app.post("/user/login")
+
+    def test_login(self):
+        rv = self.login("123456", "123456")
+        print rv
+
 
 if __name__ == '__main__':
     unittest.main()

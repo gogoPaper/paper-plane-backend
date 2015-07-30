@@ -18,12 +18,12 @@ class User:
     #     focus_stories: [story_ids],
     #     focus_users: [user_ids]
     # }
-    def __init__(self, phone,password,nickname,avatar):
+    def __init__(self, phone,password,avatar):
         self._id = ObjectId()
         #self.token=""
         self.phone = phone
         self.password = password
-        self.nickname = nickname
+        self.nickname = ""
         self.avatar =avatar
         self.degree = 0
         self.experience_value = 0
@@ -49,8 +49,8 @@ class User:
         else:
             return "Insert fail due to unvalid parameter."   
 
-    #get user by id or get all users 
-    #return type: json
+    #@params user id
+    #json type: list or dict
     @staticmethod
     def get_user(id = None):
         collection =  db['user']
@@ -59,14 +59,15 @@ class User:
         else:
             return dumps(collection.find_one({"_id":id}))
 
-    #get the user by phone
+    #@params phone
     #json type: list
     @staticmethod
     def get_user_by_phone(phone):
         collection =  db['user']
         return dumps(collection.find_one({"phone":phone}))
 
-    #update user
+    #@params u_user
+    #@return success return "", else return reasons
     @staticmethod
     def update_user(u_user):
         collection =  db['user']
@@ -83,7 +84,8 @@ class User:
         else:
             return "Update fail due to unvalid parameter."
 
-    #focus story
+    #@params user_id , story_id
+    #@return success return "", else return reasons
     @staticmethod
     def add_focus_story(user_id, story_id):
         collection = db['user']
@@ -100,7 +102,8 @@ class User:
         except PyMongoError as e:
             return "add focus to story fail due to unkown reason."
 
-    #focus story
+    #@params user_id , focus_user_id
+    #@return success return "", else return reasons
     @staticmethod
     def add_focus_user(user_id, focus_user_id):
         collection = db['user']
