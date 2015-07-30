@@ -40,7 +40,7 @@ class Story:
         collection =  db['story']
         if i_story is not None:
             try:
-                collection.insert_one(i_story.get_as_json())
+                collection.insert_one(i_story)
                 return ""
             except DuplicateKeyError as e:
                 return "Insert fail due to duplicate key."

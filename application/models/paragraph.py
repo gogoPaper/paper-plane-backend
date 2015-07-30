@@ -17,13 +17,13 @@ class Paragraph:
     # }
 
 
-    def __init__(self, author_id, story_id):
+    def __init__(self, author_id, story_id, content):
         self._id = ObjectId()
         self.author_id = author_id
         self.story_id = story_id
         self.create_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         self.favour_users = []
-        self.content = ""
+        self.content = content
         self.pictures = []
     
     #return the class as json
@@ -37,7 +37,7 @@ class Paragraph:
         collection =  db['paragraph']
         if i_paragraph is not None:
             try:
-                collection.insert_one(i_paragraph.get_as_json())
+                collection.insert_one(i_paragraph)
                 return ""
             except DuplicateKeyError as e:
                 return "Insert fail due to duplicate key."
@@ -89,15 +89,15 @@ class Paragraph:
         else:
             return "Update fail due to unvalid parameter."
 
-    @staticmethod
-    def toggle_user_favours(paragraph_id, user_id):
-        collection =  db['paragraph']
-        try:
-            target_paragraph = loads(Paragraph.get_paragraph(paragraph_id))
-            if user_id in target_paragraph['favour_users']:
-                target_paragraph['favour_users'].remove(user_id)
-            else:
-                target_paragraph['favour_users'].append(user_id)
-            return Paragraph.update_paragraph(target_paragraph)
-        except PyMongoError as e:
-                return "Update fail due to unkown reason."
+    # @staticmethod
+    # def toggle_user_favours(paragraph_id, user_id):
+    #     collection =  db['paragraph']
+    #     try:
+    #         target_paragraph = loads(Paragraph.get_paragraph(paragraph_id))
+    #         if user_id in target_paragraph['favour_users']:
+    #             target_paragraph['favour_users'].remove(user_id)
+    #         else:
+    #             target_paragraph['favour_users'].append(user_id)
+    #         return Paragraph.update_paragraph(target_paragraph)
+    #     except PyMongoError as e:
+    #             return "Update fail due to unkown reason."

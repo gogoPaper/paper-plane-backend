@@ -18,12 +18,12 @@ class User:
     #     focus_stories: [story_ids],
     #     focus_users: [user_ids]
     # }
-    def __init__(self, phone,password,nickname,avatar):
+    def __init__(self, phone,password,avatar):
         self._id = ObjectId()
         #self.token=""
         self.phone = phone
         self.password = password
-        self.nickname = nickname
+        self.nickname = ""
         self.avatar =avatar
         self.degree = 0
         self.experience_value = 0
