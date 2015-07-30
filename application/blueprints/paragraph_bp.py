@@ -23,7 +23,8 @@ def toggle():
                 'status':401,
                 'data':'user not log in'
             })
-    paragraph_id = request.form['paragraph_id']
+    # paragraph_id = request.form['paragraph_id']
+    paragraph_id = json.loads(request.data)['paragraph_id']
     user_phone =  session['phone']
     user_id = loads(User.get_user_by_phone(user_phone))['_id']
 

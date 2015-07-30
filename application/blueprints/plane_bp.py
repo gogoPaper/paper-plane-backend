@@ -3,6 +3,7 @@ from bson.objectid import ObjectId
 from bson.json_util import loads
 from datetime import datetime
 import json
+import random
 
 from ..models.message import Message
 from ..models.paragraph import Paragraph
@@ -49,9 +50,9 @@ def fly():
             'status':403,
             'data':'user not log in'
             })
-    story_id = request.form['story_id']
-    title = request.form['title']
-    content = request.form['content']
+    story_id = json.loads(request.data)['story_id']
+    title = json.loads(request.data)['title']
+    content = json.loads(request.data)['content']
     user_phone =  session['phone']
     user_id = loads(User.get_user_by_phone(user_phone))['_id']
 
@@ -138,6 +139,67 @@ def hot():
                 'data':convert_id(result)#paragraph_id is still not convert
             })
 
-@plane_bp.route("/occupy")
+@plane_bp.route('/occupytest')
+def occupytest():
+    return render_template('occupytest.html')
+
+@plane_bp.route("/occupy", methods = ['POST'])
 def occupy():
-    return ""
+    if not is_login():
+        return jsonify({
+                'status':401,
+                'data':'user not log in'
+            })
+    # story_id = request.form['story_id']
+    request_json = json.loads(request.data)
+    story_id = request_json['story_id']
+    if story_id == "":
+        result = Story.get_story_id_by_state(0)
+        if result:
+            return_story_id = random.choice(loads(result))
+            result_story = Story.get_story_by_id(return_story_id['_id'])
+            if result_story == 'null':
+                return jsonify({
+                        'status':403,
+                        'data':'not existing target story'
+                    })
+            else:
+                result_story = loads(result_story)
+                del result_story['paragraph_ids']
+                del result_story['current_owner']
+                return jsonify({
+                    'status':200,
+                    'data':convert_id(result_story)
+                    })
+        else:
+            return jsonify({
+                    'status':200,
+                    'data':[]
+                })
+    else:
+        story = Story.get_story_by_id(ObjectId(story_id))
+        if story != 'null':
+            story = loads(story)
+            story['lock_time'] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            story['state'] = 1
+            story['current_owner'] = session['phone']
+            result = Story.update_story(story)
+            if result == "":
+                del story['current_owner']
+                del story['paragraph_ids']
+                return jsonify({
+                        'status':200,
+                        'data':convert_id(story)
+                    })
+            else:
+                return jsonify({
+                        'status':403,
+                        'data':'update fail'
+                    })
+        else:
+            return jsonify({
+                    'status':403,
+                    'data':'invalid story id'
+                })
+
+
