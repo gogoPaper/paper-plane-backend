@@ -12,33 +12,33 @@ from ..models.paragraph import Paragraph
 from ..models.story import Story
 from ..models.user import User
 
-from . import convert_id, is_login
+from . import convert_id, is_login,get_current_user
 plane_bp= Blueprint('plane_bp', __name__)
 
-@plane_bp.route('/')
-def index():
-    story_id = request.args.get('story_id', '')
-    if story_id == '':
-        return jsonify( {
-            'status':403,
-            'data':''
-        })
+# @plane_bp.route('/')
+# def index():
+#     story_id = request.args.get('story_id', '')
+#     if story_id == '':
+#         return jsonify( {
+#             'status':403,
+#             'data':''
+#         })
 
-    story = Story.get_story_by_id(ObjectId(story_id))
-    if story != 'null':
-        story = loads(story)
-        del story['paragraph_ids']
-        del story['current_owner']
-        data = {
-            'status':200,
-            'data':convert_id(story)
-        }
-    else:
-        data = {
-            'status':403,
-            'data':'the story does not exist'
-        }
-    return jsonify(data)
+#     story = Story.get_story_by_id(ObjectId(story_id))
+#     if story != 'null':
+#         story = loads(story)
+#         del story['paragraph_ids']
+#         del story['current_owner']
+#         data = {
+#             'status':200,
+#             'data':convert_id(story)
+#         }
+#     else:
+#         data = {
+#             'status':403,
+#             'data':'the story does not exist'
+#         }
+#     return jsonify(data)
 
 
 @plane_bp.route('/flytest')
@@ -56,7 +56,7 @@ def fly():
     title = json.loads(request.data)['title']
     content = json.loads(request.data)['content']
     user_phone =  session['phone']
-    fly_user = loads(User.get_user_by_phone(user_phone))
+    fly_user = loads(get_current_user())
     user_id = fly_user['_id']
 
     if story_id == '':
@@ -144,6 +144,7 @@ def hot():
         for r in result:
             del r['paragraph_ids']
             del r['current_owner']
+            del r['lock_time']
         return jsonify({
                 'status':200,
                 'data':convert_id(result)

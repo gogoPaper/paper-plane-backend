@@ -14,8 +14,30 @@ user_bp= Blueprint('user_bp', __name__)
 @user_bp.route('/login', methods = ['POST'])
 def login():
     # request_json = json.loads(request.data)
-    user_phone = json.loads(request.data)['phone']
-    user_password = json.loads(request.data)['password']
+    user_phone = json.loads(request.data).get('phone')
+    user_password = json.loads(request.data).get('password')
+    user_token = json.loads(request.data).get('token')
+    if user_token != None:
+        user = User.get_user_by_token(user_token)
+
+        if user != 'null':
+            session['token'] = user_token
+            return jsonify({
+                    'status':200,
+                    'data':'success'
+                })
+        else:
+            new_user = User("", "", "", user_token)
+            if User.insert_user(new_user) == "":
+                session['token'] = user_token
+                return jsonify({
+                        'status':200,
+                        'data':'token register user success'
+                    })
+            return jsonify({
+                    'status':403,
+                    'data':'fail'
+                })
     # user_phone = request_json['phone']
     # user_password = request_json['password']
     user = User.get_user_by_phone(user_phone)
@@ -50,6 +72,7 @@ def collect_user_test():
 def logout():
     if is_login():
         session.pop('phone', None)
+        session.pop('token', None)
         data = {
             'status':200,
             'data':'success'

@@ -20,7 +20,7 @@ class User:
     #     focus_stories: [story_ids],
     #     focus_users: [user_ids]
     # }
-    def __init__(self, phone,password,avatar):
+    def __init__(self, phone,password,avatar, token=""):
         self._id = ObjectId()
         #self.token=""
         self.phone = phone
@@ -31,6 +31,7 @@ class User:
         self.experience_value = 0
         self.focus_stories = []
         self.focus_users = []
+        self.token = token
 
     #return the class as json
     def get_as_json(self):
@@ -67,6 +68,13 @@ class User:
     def get_user_by_phone(phone):
         collection =  db['user']
         return dumps(collection.find_one({"phone":phone}))
+
+    #@params token
+    #json type: list
+    @staticmethod
+    def get_user_by_token(token):
+        collection =  db['user']
+        return dumps(collection.find_one({"token":token}))
 
     #@params u_user
     #@return success return "", else return reasons

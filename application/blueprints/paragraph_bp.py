@@ -9,7 +9,7 @@ from ..models.paragraph import Paragraph
 from ..models.story import Story
 from ..models.user import User
 
-from . import convert_id, is_login
+from . import convert_id, is_login,get_current_user
 
 paragraph_bp= Blueprint('paragraph_bp', __name__)
 
