@@ -378,9 +378,9 @@ class UserBpTestCase(unittest.TestCase):
         rv = self.login("123456", "123456")
         self.assertEquals(200, loads(rv.data)["status"])
 
-    def test_login_empty_phone(self):
-        rv = self.login()
-        print rv
+    # def test_login_empty_phone(self):
+    #     rv = self.login()
+    #     print rv
 
 if __name__ == '__main__':
     unittest.main()
