@@ -71,6 +71,13 @@ class Story:
         #desc order by sort_field
         return dumps(collection.find().sort(sort_field, -1).skip(offset).limit(limit))
 
+    #@params 
+    #@json type: list
+    @staticmethod
+    def get_story_id_by_state(value):
+        collection = db['story']
+        return dumps(collection.find({'state':value}, {'_id':1}))
+
     #@params u_story
     #@return success return "", else return reasons
     @staticmethod

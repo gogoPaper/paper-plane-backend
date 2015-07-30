@@ -4,6 +4,7 @@ from bson.json_util import loads
 import json
 
 from ..models.user import User
+from ..models.story import Story
 from . import is_login
 
 user_bp= Blueprint('user_bp', __name__)
@@ -11,7 +12,8 @@ user_bp= Blueprint('user_bp', __name__)
 @user_bp.route('/login', methods = ['POST'])
 def login():
     request_json = json.loads(request.data)
-    #user_phone = request.form['phone']
+    # user_phone = request.form['phone']
+    # user_password = request.form['password']
     user_phone = request_json['phone']
     print user_phone
     user_password = request_json['password']
@@ -23,14 +25,12 @@ def login():
             'data': 'success'
         }
         resp = jsonify(data)
-        # resp.status_code = 200
     else:
         data = {
             'status':403,
             'data': 'fail'
         }
         resp = jsonify(data)
-        # resp.status_code = 403
     return resp
 
 @user_bp.route('/logintest')
@@ -54,7 +54,6 @@ def logout():
             'data':'success'
         }
         resp = jsonify(data)
-        # resp.status_code = 200
         return resp
     else:
         data = {
@@ -62,7 +61,6 @@ def logout():
             'data':'user not log in'
         }
         resp = jsonify(data)
-        # resp.status_code = 403
         return resp
 
 @user_bp.route('/register', methods = ['POST'])
@@ -70,14 +68,12 @@ def register():
     user_phone = json.loads(request.data)['phone']
     user_password = json.loads(request.data)['password']
     user_avatar = json.loads(request.data)['avatar']
-    # print user_phone, user_password, user_avatar
     if User.get_user_by_phone(user_phone) != 'null':
         data = {
             'status':403,
             'data':'user exit!'
         }
         resp = jsonify(data)
-        # resp.status_code = 403
     else:
         r_user = User(user_phone, user_password, user_avatar)
         result = User.insert_user(r_user) 
@@ -87,14 +83,12 @@ def register():
                 'data':'success'
             }
             resp = jsonify(data)
-            # resp.status_code = 200
         else:
             data = {
                 'status':500,
                 'data':'create user fail'
             }
             resp = jsonify(data)
-            # resp.status_code = 500
     return resp
 
 
@@ -153,6 +147,9 @@ def collect_plane():
             })
 
 
-# @user_bp.route('/draft')
-# def draft():
-#     return ""
+# # @user_bp.route('/draft')
+# # def draft():
+# #     return ""
+# @user_bp.route('/test')
+# def test():
+#     return Story.get_story_by_id(ObjectId("55b8b9ddf5888d3ac24de210"))
