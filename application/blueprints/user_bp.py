@@ -10,9 +10,7 @@ user_bp= Blueprint('user_bp', __name__)
 
 @user_bp.route('/login', methods = ['POST'])
 def login():
-    print request.data
     request_json = json.loads(request.data)
-    print '---------------------------', request_json
     #user_phone = request.form['phone']
     user_phone = request_json['phone']
     print user_phone
@@ -69,10 +67,10 @@ def logout():
 
 @user_bp.route('/register', methods = ['POST'])
 def register():
-    user_phone = request.form['phone']
-    user_password = request.form['password']
-    user_avatar = request.form['avatar']
-    print user_phone, user_password, user_avatar
+    user_phone = json.loads(request.data)['phone']
+    user_password = json.loads(request.data)['password']
+    user_avatar = json.loads(request.data)['avatar']
+    # print user_phone, user_password, user_avatar
     if User.get_user_by_phone(user_phone) != 'null':
         data = {
             'status':403,
@@ -106,7 +104,7 @@ def collect_user():
     if is_login():
         user = User.get_user_by_phone(session['phone'])
         user_id = loads(user)['_id']
-        collect_user_id = ObjectId(request.form['user_id'])
+        collect_user_id = ObjectId(json.loads(request.data)['user_id'])
         result = User.add_focus_user(user_id, collect_user_id)
         if result == '':
             data = {
@@ -133,7 +131,7 @@ def collect_plane():
     if is_login():
         user = User.get_user_by_phone(session['phone'])
         user_id = loads(user)['_id']
-        collect_story_id = ObjectId(request.form['story_id'])
+        collect_story_id = ObjectId(json.loads(request.data)['story_id'])
         result = User.add_focus_story(user_id, collect_story_id)
         if result == '':
             data = {

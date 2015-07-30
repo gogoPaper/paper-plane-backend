@@ -49,9 +49,9 @@ def fly():
             'status':403,
             'data':'user not log in'
             })
-    story_id = request.form['story_id']
-    title = request.form['title']
-    content = request.form['content']
+    story_id = json.loads(request.data)['story_id']
+    title = json.loads(request.data)['title']
+    content = json.loads(request.data)['content']
     user_phone =  session['phone']
     user_id = loads(User.get_user_by_phone(user_phone))['_id']
 
@@ -138,6 +138,9 @@ def hot():
                 'data':convert_id(result)#paragraph_id is still not convert
             })
 
-@plane_bp.route("/occupy")
+@plane_bp.route("/occupy", methods = ['POST'])
 def occupy():
+    story_id = request.form['story_id']
+    if not story_id:
     return ""
+
