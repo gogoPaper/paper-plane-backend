@@ -54,7 +54,8 @@ def fly():
     title = json.loads(request.data)['title']
     content = json.loads(request.data)['content']
     user_phone =  session['phone']
-    user_id = loads(User.get_user_by_phone(user_phone))['_id']
+    fly_user = loads(User.get_user_by_phone(user_phone))
+    user_id = fly_user['_id']
 
     if story_id == '':
         if content == '':
@@ -68,6 +69,8 @@ def fly():
         first_paragraph = Paragraph(user_id, new_story_id, content).get_as_json()
         story['paragraph_ids'].append(first_paragraph['_id'])
         if Story.insert_story(story) == "" and Paragraph.insert_paragraph(first_paragraph)=="":
+            fly_user['experience_value'] += 3
+            User.update_user(fly_user)
             return jsonify({
                     'status':200,
                     'data':'success'
@@ -103,6 +106,8 @@ def fly():
             new_paragraph = Paragraph(user_id, ObjectId(story_id), content).get_as_json()
             story['paragraph_ids'].append(new_paragraph['_id'])
             if Story.update_story(story) == "" and Paragraph.insert_paragraph(new_paragraph) == "":
+                fly_user['experience_value'] += 5
+                User.update_user(fly_user)
                 return jsonify({
                         'status':200,
                         'data':'success'
@@ -123,7 +128,8 @@ def hot():
                 'status':403,
                 'data':'invalid parameters'
             })
-    result = Story.get_story_by_fields(int(offset), int(amount))
+    offset = (int(offset)-1)*int(amount)
+    result = Story.get_story_by_fields(offset, int(amount))
     if result == 'null':
         return jsonify({
                 'status':200,
@@ -136,7 +142,7 @@ def hot():
             del r['current_owner']
         return jsonify({
                 'status':200,
-                'data':convert_id(result)#paragraph_id is still not convert
+                'data':convert_id(result)
             })
 
 @plane_bp.route('/occupytest')
@@ -174,7 +180,7 @@ def occupy():
         else:
             return jsonify({
                     'status':200,
-                    'data':[]
+                    'data':""
                 })
     else:
         story = Story.get_story_by_id(ObjectId(story_id))

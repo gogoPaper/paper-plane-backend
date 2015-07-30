@@ -77,7 +77,8 @@ def story_paragraphs():
         story = loads(story)
         paragraphs = story['paragraph_ids']
         p_length = len(paragraphs)
-        start = int(offset)
+        offset = (int(offset)-1)*int(amount)
+        start = offset
         if  p_length - start <= 0:
             return jsonify({
                     'status':200,
