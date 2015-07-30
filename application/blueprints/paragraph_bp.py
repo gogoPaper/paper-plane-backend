@@ -13,11 +13,6 @@ from . import convert_id, is_login,get_current_user
 
 paragraph_bp= Blueprint('paragraph_bp', __name__)
 
-
-@paragraph_bp.route('/toggletest')
-def toggletest():
-    return render_template('toggletest.html')
-
 #点赞(已点赞则为取消点赞)
 @paragraph_bp.route('/toggle', methods=['POST'])
 def toggle():
@@ -29,8 +24,7 @@ def toggle():
     # paragraph_id = request.form['paragraph_id']
 
     paragraph_id = json.loads(request.data)['paragraph_id']
-    user_phone =  session['phone']
-    user_id = loads(User.get_user_by_phone(user_phone))['_id']
+    user_id = loads(get_current_user())['_id']
     #获得目标段落对象
     target_paragraph = Paragraph.get_paragraph(ObjectId(paragraph_id))
     if target_paragraph != 'null':
@@ -60,13 +54,14 @@ def toggle():
                     'status':403,
                     'data':update_paragraph_result+ " " +update_story_result
                 })
+    #目标段落不存在,返回403
     else:
         return jsonify({
                 'status':403,
                 'data':'invalid paragraph_id'
             })
 
-
+#根据每页显示数量以及页数返回故事段落
 @paragraph_bp.route('/story-paragraphs')
 def story_paragraphs():
     story_id = request.args.get('story_id', '')
@@ -80,28 +75,28 @@ def story_paragraphs():
             })
 
     story = Story.get_story_by_id(ObjectId(story_id))
-
+    #如果传入的story_id存在对应的story,则进行处理
     if story != 'null':
         story = loads(story)
         paragraphs = story['paragraph_ids']
         p_length = len(paragraphs)
         offset = (int(offset)-1)*int(amount)
         start = offset
+        #如果页数的位移超出了段落数量,返回空
         if  p_length - start <= 0:
             return jsonify({
                     'status':200,
                     'data':''
                 })
         else:
+            #如果该页显示的数量大于段落数量,则设置结束位置为段落数
             if start + int(amount) < p_length:
                 end = start + int(amount)
             else:
                 end = p_length
         return_para_id = paragraphs[start:end]
         return_para = []
-        # print end
-        # print start
-        # print p_length
+        #将选中的段落信息加入返回的段落列表中
         for p_id in return_para_id:
             p = loads(Paragraph.get_paragraph(p_id))
             author = loads(User.get_user(p['author_id']))

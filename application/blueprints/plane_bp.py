@@ -15,36 +15,8 @@ from ..models.user import User
 from . import convert_id, is_login,get_current_user
 plane_bp= Blueprint('plane_bp', __name__)
 
-# @plane_bp.route('/')
-# def index():
-#     story_id = request.args.get('story_id', '')
-#     if story_id == '':
-#         return jsonify( {
-#             'status':403,
-#             'data':''
-#         })
-
-#     story = Story.get_story_by_id(ObjectId(story_id))
-#     if story != 'null':
-#         story = loads(story)
-#         del story['paragraph_ids']
-#         del story['current_owner']
-#         data = {
-#             'status':200,
-#             'data':convert_id(story)
-#         }
-#     else:
-#         data = {
-#             'status':403,
-#             'data':'the story does not exist'
-#         }
-#     return jsonify(data)
-
-
-@plane_bp.route('/flytest')
-def flytest():
-    return render_template('flytest.html')
-
+#如果story_id为空则为叠飞机，story_id如果不为空则判断content是否为空，
+#不空则为完成续写飞机(title为空)，空的话就是扔回飞机
 @plane_bp.route('/fly', methods = ['POST'])
 def fly():
     if not is_login():
@@ -55,22 +27,27 @@ def fly():
     story_id = json.loads(request.data)['story_id']
     title = json.loads(request.data)['title']
     content = json.loads(request.data)['content']
-    user_phone =  session['phone']
     fly_user = loads(get_current_user())
     user_id = fly_user['_id']
-
+    #story_id为空,为叠飞机
     if story_id == '':
+        #叠飞机内容为空,返回错误信息
         if content == '':
             return jsonify(
                 {
                     'status':403,
                     'data':"empty content"
                 })
+        #创建新story对象
         story = Story(title).get_as_json()
         new_story_id = story['_id']
+        #创建第一段段落对象
         first_paragraph = Paragraph(user_id, new_story_id, content).get_as_json()
+        #将第一段段落id插入新story对象
         story['paragraph_ids'].append(first_paragraph['_id'])
+        #插入story对象和paragraph对象
         if Story.insert_story(story) == "" and Paragraph.insert_paragraph(first_paragraph)=="":
+            #叠飞机成功,增加经验值
             fly_user['experience_value'] += 3
             fly_user['degree'] = fly_user['experience_value'] /50
             User.update_user(fly_user)
@@ -83,6 +60,7 @@ def fly():
                     'status':403,
                     'data':'fail to create a plane'
                 })
+    #story_id不为空,为续写飞机
     else:
         story = Story.get_story_by_id(ObjectId(story_id))
         if story == 'null':
@@ -94,6 +72,7 @@ def fly():
             story = loads(story)
             story['status'] = 0
             story['current_owner'] = ""
+            #内容为空,不增加新段落,扔回飞机
             if content == '':
                 result = Story.update_story(story) 
                 if result == '':
@@ -106,9 +85,13 @@ def fly():
                             'status':403,
                             'data':result
                         })
+            #增加新段落
             new_paragraph = Paragraph(user_id, ObjectId(story_id), content).get_as_json()
+            #将新段落Id插入故事
             story['paragraph_ids'].append(new_paragraph['_id'])
+            #更新故事和插入段落
             if Story.update_story(story) == "" and Paragraph.insert_paragraph(new_paragraph) == "":
+                #续写飞机成功增加经验值
                 fly_user['experience_value'] += 5
                 fly_user['degree'] = fly_user['experience_value'] /50
                 User.update_user(fly_user)
@@ -122,7 +105,7 @@ def fly():
                         'data':'fail to continue a plane'
                     })
 
-
+#返回热门飞机
 @plane_bp.route('/hot')
 def hot():
     amount = request.args.get('amount', '')
@@ -132,6 +115,7 @@ def hot():
                 'status':403,
                 'data':'invalid parameters'
             })
+    #将页数转为offset
     offset = (int(offset)-1)*int(amount)
     result = Story.get_story_by_fields(offset, int(amount))
     if result == 'null':
@@ -140,6 +124,7 @@ def hot():
                 'data':''
             })
     else:
+        #返回故事相应字段给前端
         result = loads(result)
         for r in result:
             del r['paragraph_ids']
@@ -150,10 +135,7 @@ def hot():
                 'data':convert_id(result)
             })
 
-@plane_bp.route('/occupytest')
-def occupytest():
-    return render_template('occupytest.html')
-
+#如果story_id为空,则为捡飞机,否则为续写飞机
 @plane_bp.route("/occupy", methods = ['POST'])
 def occupy():
     if not is_login():
@@ -164,6 +146,7 @@ def occupy():
     # story_id = request.form['story_id']
     request_json = json.loads(request.data)
     story_id = request_json['story_id']
+    #story_id为空,随机返回一个未被占用的故事
     if story_id == "":
         result = Story.get_story_id_by_state(0)
         if result:
@@ -187,13 +170,14 @@ def occupy():
                     'status':200,
                     'data':""
                 })
+    #story_id不为空,续写飞机,进行锁定
     else:
         story = Story.get_story_by_id(ObjectId(story_id))
         if story != 'null':
             story = loads(story)
             story['lock_time'] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             story['state'] = 1
-            story['current_owner'] = session['phone']
+            story['current_owner'] = loads(get_current_user())['_id']
             result = Story.update_story(story)
             if result == "":
                 del story['current_owner']

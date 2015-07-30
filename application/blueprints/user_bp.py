@@ -7,16 +7,18 @@ import json
 
 from ..models.user import User
 from ..models.story import Story
-from . import is_login, convert_id
+from . import is_login, convert_id,get_current_user
 
 user_bp= Blueprint('user_bp', __name__)
 
+#用户登陆
 @user_bp.route('/login', methods = ['POST'])
 def login():
     # request_json = json.loads(request.data)
     user_phone = json.loads(request.data).get('phone')
     user_password = json.loads(request.data).get('password')
     user_token = json.loads(request.data).get('token')
+    #存在user_token字段,则使用user_token登陆
     if user_token != None:
         user = User.get_user_by_token(user_token)
 
@@ -38,8 +40,7 @@ def login():
                     'status':403,
                     'data':'fail'
                 })
-    # user_phone = request_json['phone']
-    # user_password = request_json['password']
+    #使用手机以及密码登陆
     user = User.get_user_by_phone(user_phone)
     if user != 'null' and loads(user)['password']==user_password:
         session['phone'] = user_phone
@@ -56,18 +57,7 @@ def login():
         resp = jsonify(data)
     return resp
 
-@user_bp.route('/logintest')
-def testlogin():
-    return render_template('form.html')
-
-@user_bp.route('/registertest')
-def registertest():
-    return render_template('registertest.html')
-
-@user_bp.route('/collect-user-test')
-def collect_user_test():
-    return render_template('collect-user-test.html')
-
+#用户登出
 @user_bp.route('/logout')
 def logout():
     if is_login():
@@ -87,6 +77,7 @@ def logout():
         resp = jsonify(data)
         return resp
 
+#用户注册
 @user_bp.route('/register', methods = ['POST'])
 def register():
     user_phone = json.loads(request.data)['phone']
@@ -115,14 +106,12 @@ def register():
             resp = jsonify(data)
     return resp
 
-
-
+#收藏用户
 @user_bp.route('/collect-user', methods = ['POST'])
 def collect_user():
     if is_login():
-        user = User.get_user_by_phone(session['phone'])
+        user = get_current_user()
         user_id = loads(user)['_id']
-        # collect_user_id = ObjectId(json.loads(request.data)['user_id'])
         collect_user_id = ObjectId(json.loads(request.data)['user_id'])
         result = User.add_focus_user(user_id, collect_user_id)
         if result == '':
@@ -144,13 +133,12 @@ def collect_user():
                 'data':'user not log in'
             })
 
-
+#收藏飞机
 @user_bp.route('/collect-plane', methods = ['POST'])
 def collect_plane():
     if is_login():
-        user = User.get_user_by_phone(session['phone'])
+        user = get_current_user()
         user_id = loads(user)['_id']
-        # collect_story_id = ObjectId(json.loads(request.data)['story_id'])
         collect_story_id = ObjectId(json.loads(request.data)['story_id'])
         story = Story.get_story_by_id(collect_story_id)
         if story == 'null':
@@ -181,14 +169,7 @@ def collect_plane():
                 'data':'user not log in'
             })
 
-
-# # @user_bp.route('/draft')
-# # def draft():
-# #     return ""
-# @user_bp.route('/test')
-# def test():
-#     return Story.get_story_by_id(ObjectId("55b8b9ddf5888d3ac24de210"))
-
+#显示收藏用户列表
 @user_bp.route('/show-focus-users')
 def show_foucs_users():
     if not is_login():
@@ -196,7 +177,7 @@ def show_foucs_users():
                 'status':401,
                 'data':'user not log in'
             })
-    user = User.get_user_by_phone(session['phone'])
+    user = get_current_user()
     focus_users = loads(user)['focus_users']
     if not focus_users:
         return jsonify({
@@ -219,7 +200,7 @@ def show_foucs_users():
                 'data':convert_id(return_users)
             })
 
-
+#显示收藏故事列表
 @user_bp.route('/show-focus-stories')
 def show_foucs_stories():
     if not is_login():
@@ -227,7 +208,7 @@ def show_foucs_stories():
                 'status':401,
                 'data':'user not log in'
             })
-    user = User.get_user_by_phone(session['phone'])
+    user = get_current_user()
     focus_stories = loads(user)['focus_stories']
     if not focus_stories:
         return jsonify({
