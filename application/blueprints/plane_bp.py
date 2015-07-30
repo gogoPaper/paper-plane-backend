@@ -56,11 +56,11 @@ def fly():
 
     if story_id == '':
         if content == '':
-        return jsonify(
-            {
-                'status':403,
-                'data':"empty content"
-            })
+            return jsonify(
+                {
+                    'status':403,
+                    'data':"empty content"
+                })
         story = Story(title).get_as_json()
         new_story_id = story['_id']
         first_paragraph = Paragraph(user_id, new_story_id, content).get_as_json()
