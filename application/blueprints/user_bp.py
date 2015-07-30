@@ -10,9 +10,12 @@ user_bp= Blueprint('user_bp', __name__)
 
 @user_bp.route('/login', methods = ['POST'])
 def login():
-    request_json = json.loads(request.get_json())
+    print request.data
+    request_json = json.loads(request.data)
+    print '---------------------------', request_json
     #user_phone = request.form['phone']
     user_phone = request_json['phone']
+    print user_phone
     user_password = request_json['password']
     user = User.get_user_by_phone(user_phone)
     if user != 'null' and loads(user)['password']==user_password:
