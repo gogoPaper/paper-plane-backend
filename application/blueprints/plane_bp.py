@@ -2,6 +2,7 @@ from flask import Blueprint, session, request, jsonify,render_template
 from bson.objectid import ObjectId
 from bson.json_util import loads
 from datetime import datetime
+import json
 
 from ..models.message import Message
 from ..models.paragraph import Paragraph

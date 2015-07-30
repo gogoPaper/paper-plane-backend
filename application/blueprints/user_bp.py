@@ -1,6 +1,7 @@
 from flask import Blueprint, session, request, jsonify,render_template
 from bson.objectid import ObjectId
 from bson.json_util import loads
+import json
 
 from ..models.user import User
 from . import is_login
@@ -9,7 +10,7 @@ user_bp= Blueprint('user_bp', __name__)
 
 @user_bp.route('/login', methods = ['POST'])
 def login():
-    request_json = loads(request.get_json())
+    request_json = json.loads(request.get_json())
     #user_phone = request.form['phone']
     user_phone = request_json['phone']
     user_password = request_json['password']
