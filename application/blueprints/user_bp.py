@@ -9,9 +9,12 @@ user_bp= Blueprint('user_bp', __name__)
 
 @user_bp.route('/login', methods = ['POST'])
 def login():
-    user_phone = request.form['phone']
+    request_json = loads(request.get_json())
+    #user_phone = request.form['phone']
+    user_phone = request_json['phone']
+    user_password = request_json['password']
     user = User.get_user_by_phone(user_phone)
-    if user != 'null' and loads(user)['password']==request.form['password']:
+    if user != 'null' and loads(user)['password']==user_password:
         session['phone'] = user_phone
         data = {
             'status':200,
@@ -148,6 +151,6 @@ def collect_plane():
             })
 
 
-@user_bp.route('/draft')
-def draft():
-    return ""
+# @user_bp.route('/draft')
+# def draft():
+#     return ""

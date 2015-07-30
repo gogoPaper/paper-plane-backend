@@ -54,13 +54,13 @@ def fly():
     user_phone =  session['phone']
     user_id = loads(User.get_user_by_phone(user_phone))['_id']
 
-    if content == "":
+    if story_id == '':
+        if content == '':
         return jsonify(
             {
                 'status':403,
                 'data':"empty content"
             })
-    if story_id == '':
         story = Story(title).get_as_json()
         new_story_id = story['_id']
         first_paragraph = Paragraph(user_id, new_story_id, content).get_as_json()
@@ -86,6 +86,18 @@ def fly():
             story = loads(story)
             story['status'] = 0
             story['current_owner'] = ""
+            if content == '':
+                result = Story.update_story(story) 
+                if result == '':
+                    return jsonify({
+                            'status':200,
+                            'data':'success'
+                        })
+                else:
+                    return jsonify({
+                            'status':403,
+                            'data':result
+                        })
             new_paragraph = Paragraph(user_id, ObjectId(story_id), content).get_as_json()
             story['paragraph_ids'].append(new_paragraph['_id'])
             if Story.update_story(story) == "" and Paragraph.insert_paragraph(new_paragraph) == "":
@@ -127,10 +139,4 @@ def hot():
 
 @plane_bp.route("/occupy")
 def occupy():
-    
-    
-
-@plane_bp.route("/throw")
-def throw_plane():
     return ""
-
