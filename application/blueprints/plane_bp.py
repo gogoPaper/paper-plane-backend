@@ -1,3 +1,5 @@
+#-*- coding: UTF-8 -*- 
+
 from flask import Blueprint, session, request, jsonify,render_template
 from bson.objectid import ObjectId
 from bson.json_util import loads
@@ -70,6 +72,7 @@ def fly():
         story['paragraph_ids'].append(first_paragraph['_id'])
         if Story.insert_story(story) == "" and Paragraph.insert_paragraph(first_paragraph)=="":
             fly_user['experience_value'] += 3
+            fly_user['degree'] = fly_user['experience_value'] /50
             User.update_user(fly_user)
             return jsonify({
                     'status':200,
@@ -107,6 +110,7 @@ def fly():
             story['paragraph_ids'].append(new_paragraph['_id'])
             if Story.update_story(story) == "" and Paragraph.insert_paragraph(new_paragraph) == "":
                 fly_user['experience_value'] += 5
+                fly_user['degree'] = fly_user['experience_value'] /50
                 User.update_user(fly_user)
                 return jsonify({
                         'status':200,

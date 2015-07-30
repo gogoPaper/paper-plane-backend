@@ -1,3 +1,5 @@
+#-*- coding: UTF-8 -*- 
+
 from flask import Blueprint, session, request, jsonify,render_template
 from bson.objectid import ObjectId
 from bson.json_util import loads,dumps
