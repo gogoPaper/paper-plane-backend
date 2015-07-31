@@ -18,6 +18,7 @@ def login():
     user_phone = json.loads(request.data).get('phone')
     user_password = json.loads(request.data).get('password')
     user_token = json.loads(request.data).get('token')
+    user_avatar = json.loads(request.data).get('avatar')
     #存在user_token字段,则使用user_token登陆
     if user_token != None:
         user = User.get_user_by_token(user_token)
@@ -29,7 +30,7 @@ def login():
                     'data':'success'
                 })
         else:
-            new_user = User("", "", "", user_token)
+            new_user = User("", "", user_avatar, user_token)
             if User.insert_user(new_user) == "":
                 session['token'] = user_token
                 return jsonify({
